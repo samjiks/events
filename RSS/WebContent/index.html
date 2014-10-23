@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Javascript put on top for quicker page load -->
+<!-- <script type="text/javascript" src="js/External/bootstrap.js"></script> -->
+<script type="text/javascript" src="js/External/jquery-1.8.2.js"></script>
+<script type="text/javascript" src="js/serviceHelper.js"></script>
+
+<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUL_UsYS3SDzBp43RZL2Rmx5NmNuJh6O0&amp;sensor=true"></script>
+<script type="text/javascript" src="js/Maps.js"></script>
+<title>Aberdeen Events</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<link href="css/bootstrap.css" rel="stylesheet">
+<style type="text/css">
+body {
+	padding-top: 60px;
+	padding-bottom: 40px;
+	-webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+.sidebar-nav {
+	padding: 9px 0;
+}
+
+#mapCanvas img {
+	width: auto;
+	display: inline;
+}
+
+#mapCanvas label {
+	max-width: none;
+}
+
+#panel img {
+	max-width: none;
+	width: auto;
+}
+</style>
+<link href="css/bootstrap-responsive.css" rel="stylesheet">
+
+<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+<!-- Fav and touch icons -->
+<link rel="shortcut icon" href="ico/favicon.ico">
+<link rel="apple-touch-icon-precomposed" sizes="144x144"
+	href="ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114"
+	href="ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72"
+	href="ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed"
+	href="ico/apple-touch-icon-57-precomposed.png">
+
+<script type="text/javascript">
+	function getCategories ()	
+	{
+	  var list = getAllCategories();
+	  var allCategories;
+	  
+		list.success(function(data){
+		  allCategories = data;
+	    //  allCategories = $.parseJSON(list.responseText);
+	    for ( var x = 0; x < allCategories.length; x++) {
+	      $("#cat").append("<option>"
+						+ allCategories[x] + "</option>"); 
+	    }
+		});
+	  
+	};
+	
+	function getItemsOfCategory ()
+	{
+	  var sCategory = document.getElementById ("cat").value;
+	  var list =  getFeedItemsByCategory (sCategory);
+		$("#eventlist ol").empty();
+	  list.success(function(data){
+			//allItems = data;
+		//	allItems = $.parseJSON(list.responseText);
+		if(data.rssItem[0]==null)
+		{
+			$("#eventlist ol").append(
+					"<li><div id=\"0\"><a onclick=(goto("+ data.rssItem.eventID +"))>"
+							+ data.rssItem.title + ".</a></div></li>")
+					.slideDown("slow");
+		 }
+		else
+		{
+			for ( var x = 0; x < data.rssItem.length; x++) {
+				$("#eventlist ol").append(
+						"<li><div id="+x+"><a onclick=(goto("+ data.rssItem[x].eventID +"))>"
+								+ data.rssItem[x].title + ".</a></div></li>")
+						.slideDown("slow");
+			}}});
+	  
+	};
+	
+	function goto(x){
+		var aItem = getFeedItemsById(x);
+	 // var aEventTitle = data.rssItem.title;
+ 	
+
+	aItem.success(function(data){
+		$("#event-title h4").empty();
+ 		$("#event-location h5").empty();
+ 		$("#event-category h5").empty();
+ 		$("#event-description h5").empty();
+ 		$("#event-date h5").empty();
+ 		$("#event-url h5").empty();
+ 		$("#image").empty();
+ 		$("#to").empty();
+ 		
+     aData = data.rssItem.startDate + " " + data.rssItem.startTime;
+ 		$("#event-title h4").append(data.rssItem.title).slideDown("slow");
+ 		$("#event-location h5").append("Location: "+data.rssItem.address).slideDown("slow");
+ 		$("#event-category h5").append("Category: "+data.rssItem.category).slideDown("slow");
+ 		$("#event-description h5").append("Description: "+data.rssItem.description).slideDown("slow");
+ 		$("#event-date h5").append("Date: " + aData).slideDown("slow");
+ 		$("#event-url h5").append("<a href=\""+data.rssItem.link +"\">Event Website</a>").slideDown("slow");
+ 		$("#image").append("<img src=\"" +data.rssItem.imageLink +"\" alt=\"Event Image\" class=\"img-rounded\">");
+ 		//$("#event-image h4").append(data.rssItem.title);
+ 	 	geoCode(data.rssItem.address);
+ 	 	$("#to").append(data.rssItem.address).slideDown();
+	});
+	//window.location.href="../RSS/event.html?id=" + x + "";
+	};
+	
+	function getdatefilter()
+	{
+		$("#eventlist ol").empty();
+		//var i = document.getElementsByName("eventoptions");
+		if(document.getElementById('allEvents').checked) 
+		{
+			
+		var list = getAllFeedItems();
+	
+		list.success(function(data){
+			allItems = data;
+			allItems = $.parseJSON(list.responseText);
+			$("#eventlist ol").empty();
+			for ( var x = 1; x < allItems.rssItem.length; x++) {
+				$("#eventlist ol").append(
+						"<li><div id="+x+"><a onclick=(goto("+ x +"))>"
+								+ allItems.rssItem[x].title + ".</a></div></li>")
+						.slideDown("slow");
+				//geoCode(""+allItems.rssItem[x].Address+"");
+			}
+			//getCategories ();
+		});
+		}
+		else if(document.getElementById('dayEvents').checked) 
+			{
+			$("#eventlist ol").empty();
+			var list = getbytoday();
+			list.success(function(data){
+				if(data.rssItem[0]==null)
+				{
+					$("#eventlist ol").append(
+							"<li><div id=\"0\"><a onclick=(goto("+ data.rssItem.eventID +"))>"
+									+ data.rssItem.title + ".</a></div></li>")
+							.slideDown("slow");
+				 }
+				else
+				{
+					for ( var x = 0; x < data.rssItem.length; x++) {
+						$("#eventlist ol").append(
+								"<li><div id="+x+"><a onclick=(goto("+ data.rssItem[x].eventID +"))>"
+										+ data.rssItem[x].title + ".</a></div></li>")
+								.slideDown("slow");
+					}}});
+			
+			}
+		else if(document.getElementById('tomEvents').checked) 
+		{
+			$("#eventlist ol").empty();
+			var list = getbytomorrow();
+	
+			list.success(function(data){
+				if(data.rssItem[0]==null)
+				{
+					$("#eventlist ol").append(
+							"<li><div id=\"0\"><a onclick=(goto("+ data.rssItem.eventID +"))>"
+									+ data.rssItem.title + ".</a></div></li>")
+							.slideDown("slow");
+				 }
+				else
+				{
+					for ( var x = 0; x < data.rssItem.length; x++) {
+						$("#eventlist ol").append(
+								"<li><div id="+x+"><a onclick=(goto("+ data.rssItem[x].eventID +"))>"
+										+ data.rssItem[x].title + ".</a></div></li>")
+								.slideDown("slow");
+					}}});
+		
+		}
+		else if(document.getElementById('weekEvents').checked) 
+		{
+		    var list = getbyweekly();
+			$("#eventlist ol").empty();
+			list.success(function(data){
+				if(data.rssItem[0]==null)
+				{
+					$("#eventlist ol").append(
+							"<li><div id=\"0\"><a onclick=(goto("+ data.rssItem.eventID +"))>"
+									+ data.rssItem.title + ".</a></div></li>")
+							.slideDown("slow");
+				 }
+				else
+				{
+					for ( var x = 0; x < data.rssItem.length; x++) {
+						$("#eventlist ol").append(
+								"<li><div id="+x+"><a onclick=(goto("+ data.rssItem[x].eventID +"))>"
+										+ data.rssItem[x].title + ".</a></div></li>")
+								.slideDown("slow");
+					}}});
+		
+		}
+	}
+	var list = getAllFeedItems();
+	list.success(function(data){
+		allItems = data;
+		allItems = $.parseJSON(list.responseText);
+	    aData = data.rssItem[0].startDate + " " + data.rssItem[0].startTime;
+		for ( var x = 1; x < allItems.rssItem.length; x++) {
+			$("#eventlist ol").append(
+					"<li><div id="+x+"><a onclick=(goto("+ x +"))>"
+							+ allItems.rssItem[x].title + ".</a></div></li>")
+					.slideDown("slow");
+			//geoCode(""+allItems.rssItem[x].Address+"");
+		}
+		getCategories ();
+		$("#event-title h4").empty();
+ 		$("#event-location h5").empty();
+ 		$("#event-category h5").empty();
+ 		$("#event-description h5").empty();
+ 		$("#event-date h5").empty();
+ 		$("#event-url h5").empty();
+ 		$("#image").empty();
+ 		$("#to").empty();
+ 		
+ 		$("#event-title h4").append(allItems.rssItem[0].title).slideDown("slow");
+ 		$("#event-location h5").append("Location: "+allItems.rssItem[0].address).slideDown("slow");
+ 		$("#event-category h5").append("Category: "+allItems.rssItem[0].category).slideDown("slow");
+ 		$("#event-description h5").append("Description: "+allItems.rssItem[0].description).slideDown("slow");
+ 		$("#event-date h5").append("Date: " + aData).slideDown("slow");
+ 		$("#event-url h5").append("<a href=\""+allItems.rssItem[0].link +"\">Event Website</a>").slideDown("slow");
+ 		$("#image").append("<img src=\"" +allItems.rssItem[0].imageLink +"\" alt=\"Event Image\" class=\"img-rounded\">");
+ 		//$("#event-image h4").append(data.rssItem.title);
+ 	 	geoCode(allItems.rssItem[0].address);
+ 	 	$("#to").append(allItems.rssItem[0].address).slideDown();
+ 	   //  transitDirections(aData);
+	});
+	</script>
+</head>
+
+<body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container-fluid">
+				<a class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span>
+				</a> <a class="brand" href="index.html">Aberdeen Events</a>
+				<div class="nav-collapse collapse">
+					<div class="navbar-text pull-right"></div>
+					<ul class="nav">
+						<li class="active"><a href="index.html">Home</a></li>
+						<li><a href="about.html">About Us</a></li>
+						<li><a href="#contact">Contact Us</a></li>
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+		</div>
+	</div>
+
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span3">
+				<div class="well sidebar-nav">
+					<ul class="nav nav-list ">
+						<li class="nav-header">Category</li>
+						<li class="active"><a href="#">Home</a></li>
+						<li><a href="about.html">About Us</a></li>
+						<li><a href="about.html">Contact Us</a></li>
+
+						<!--  <li><a href="#">Link</a></li> 
+              <li class="nav-header">Sidebar</li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li class="nav-header">Sidebar</li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>  -->
+					</ul>
+					<!-- <div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span4">  -->
+				</div>
+				<p class="lead">Filter Options</p>
+				<hr>
+				<div class="well">
+					<form>
+						<fieldset>
+							<ul>
+								<li class="nav-header">Filter by Date</li>
+							</ul>
+							<label class="radio"> <input type="radio"
+								name="eventOption" id="allEvents" value="allEvents" checked>
+								Display all events.
+							</label> <label class="radio"> <input type="radio"
+								name="eventOption" id="dayEvents" value="dayEvents">
+								Display Today's Events.
+							</label> <label class="radio"> <input type="radio"
+								name="eventOption" id="tomEvents" value="tomEvents">
+								Display Tomorrow Events.
+							</label> <label class="radio"> <input type="radio"
+								name="eventOption" id="weekEvents" value="weekEvents">
+								Display this Weeks Events.
+							</label>
+							<button type="button" class="btn btn-primary"
+								onclick="getdatefilter()">Filter Events</button>
+						</fieldset>
+					</form>
+				</div>
+
+				<div class="well">
+					<form>
+						<fieldset>
+							<ul>
+								<li class="nav-header">Filter by Category</li>
+							</ul>
+							<span class="help-block">Search by Category </span> <select
+								class="span10" id="cat">
+							</select>
+							<button type="button" class="btn btn-primary"
+								onclick="getItemsOfCategory()">Filter Events</button>
+						</fieldset>
+					</form>
+				</div>
+
+				<p class="lead">Events List</p>
+				<hr>
+				<div class="well">
+					<div id="eventlist">
+						<ol></ol>
+					</div>
+				</div>
+			</div>
+
+			<!--  </div> -->
+			<!--  </div>-->
+			<!--/.well -->
+			<!-- </div>  -->
+			<!--/span-->
+			<div class="span5">
+				<hr>
+				<div>
+					<form action="" id="search-form">
+						<fieldset>
+							<div>
+								<label>Input your Postcode you want to get directions
+									from.</label> <input id="address" class="artist-search" style=""
+									type="text" placeholder="Input your address or Postcode"
+									value=""> <input type="button" class="btn btn-primary"
+									value="search" onClick="codeAddress()">
+							</div>
+						</fieldset>
+					</form>
+				</div>
+				<div class="hero-unit">
+					<div id="map_canvas"></div>
+				</div>
+				<div class="row-fluid">
+					<!-- HERE WE PUT DETAILS OF THE PARTICULAR EVENT -->
+					<div class="nav-header">Event details:</div>
+					<div id="brief-event">
+						<div class="span9">
+							<div id="event-title">
+								<h4></h4>
+							</div>
+							<div id="event-location">
+								<h5></h5>
+							</div>
+							<div id="event-category">
+								<h5></h5>
+							</div>
+							<div id="event-description">
+								<h5></h5>
+							</div>
+							<div id="event-date">
+								<h5></h5>
+							</div>
+							<div id="event-url">
+								<h5></h5>
+							</div>
+						</div>
+						<div class="span3">
+							<div id="event-image">
+								<span id="image"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<!--/row-->
+			<div class="span4">
+				<div class="hero-unit">
+					<div class="row-fluid">
+
+						<div>
+							From: <span id="from"></span>
+						</div>
+						<div>
+							To: <span id="to"> </span>
+						</div>
+						<input type="button" class=" btn btn-primary"
+							value="Get Directions"
+							onclick="if(typeof aData != 'undefined'){transitDirections(aData)}else{alert('Enter a address or postcode')}">
+
+						<div id="panel" class="span11"></div>
+					</div>
+				</div>
+			</div>
+			<!--/span-->
+		</div>
+		<!--/row-->
+
+		<hr>
+
+		<footer>
+			<div style="text-align: center;">
+				<p>&copy; Aberdeen Events - Powered by Students of Computer
+					Science Department at the University of Aberdeen</p>
+			</div>
+		</footer>
+
+	</div>
+	<!--/.fluid-container-->
+	<script src="js/External/bootstrap-transition.js"></script>
+	<script src="js/External/bootstrap-alert.js"></script>
+	<script src="js/External/bootstrap-modal.js"></script>
+	<script src="js/External/bootstrap-dropdown.js"></script>
+	<script src="js/External/bootstrap-scrollspy.js"></script>
+	<script src="js/External/bootstrap-tab.js"></script>
+	<script src="js/External/bootstrap-tooltip.js"></script>
+	<script src="js/External/bootstrap-popover.js"></script>
+	<script src="js/External/bootstrap-button.js"></script>
+	<script src="js/External/bootstrap-collapse.js"></script>
+	<script src="js/External/bootstrap-carousel.js"></script>
+	<script src="js/External/bootstrap-typeahead.js"></script>
+</body>
+</html>

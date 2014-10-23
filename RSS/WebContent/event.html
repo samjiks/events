@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Home - Home Page | Aberdeen Events</title>
+<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<script src="js/bootstrap.min.js" type="text/javascript"></script>
+<script src="js/jquery-1.8.2.js" type="text/javascript"></script>
+<script src="js/serviceHelper.js" type="text/javascript"></script>
+<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUL_UsYS3SDzBp43RZL2Rmx5NmNuJh6O0&amp;sensor=true"></script>
+<script src="js/Maps.js" type="text/javascript"></script>
+<script type="text/javascript">
+var i = 2;
+var list = getFeedItemsById(2);
+var allItems;
+list.success(function(data){
+	allItems = data;
+	allItems = $.parseJSON(list.responseText);
+	for ( var x = 1; x < allItems.rssItem.length; x++) {
+		$("#event ol").append(
+				"<li><div id="+x+"><a href="+ allItems.rssItem[x].eventID +" onclick=(goto("+ x +"))>"
+						+ allItems.rssItem[x].title + ".</a></div></li>")
+				.slideDown("slow");
+		//geoCode(""+allItems.rssItem[x].Address+"");
+	}
+});
+	
+</script>
+</head>
+<body id="index" onload="initialize()">
+ <div class="container-fluid">
+ 	<div>%%HEADER and MAP%%</div>
+ 	<div id="map_canvas"></div>
+ 	<div class="row-fluid">
+ 		<div class="span2">
+ 		</div>
+ 		<div class="span10">
+				<h5>Event Listings</h5>
+				<div id="event"><ol></ol></div>
+			</div>
+ 	</div>
+ </div>
+</body>
+</html>

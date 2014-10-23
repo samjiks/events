@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Home - Home Page | Aberdeen Events</title>
+<meta name="description" content="Place your description here">
+<meta name="keywords" content="put, your, keyword, here">
+<meta name="author" content="cssMoban.com - website templates provider">
+<link rel="stylesheet" href="css/reset.css" type="text/css" media="all">
+<link rel="stylesheet" href="css/style.css" type="text/css" media="all">
+<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+<script type="text/javascript" src="js/cufon-yui.js"></script>
+<script type="text/javascript" src="js/cufon-replace.js"></script>
+<script type="text/javascript" src="js/Myriad_Pro_300.font.js"></script>
+<script type="text/javascript" src="js/Myriad_Pro_400.font.js"></script>
+<script type="text/javascript" src="js/script.js"></script>
+<script type="text/javascript" src="js/serviceHelper.js"></script>
+<script type="text/javascript" src="js/html5.js"></script>
+<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUL_UsYS3SDzBp43RZL2Rmx5NmNuJh6O0&amp;sensor=true"></script>
+<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="js/Maps.js"></script>
+<script type="text/javascript">
+	var list = getAllFeedItems();
+	var allItems;
+		list.success(function(data){
+			allItems = $.parseJSON(list.responseText);
+			for (x in allItems.rssItem){
+				console.log(x + " " + allItems.rssItem[x].title);
+				$("#event").append("<div id="+x+">"+allItems.rssItem[x].title +"</div>");
+			}
+		});
+</script>
+</head>
+<body id="page1" onload="initialize()">
+<div class="wrap">
+	<header>
+      <div class="container">
+         <h1><a href="index.html">Aberdeen Events</a></h1>
+		<div>
+		<input id="address" type="textbox" value="">
+		<input type="button" value="Input Start" onclick="codeAddress()">
+		</div>
+      </div>
+   	</header>
+   <div class="container">
+      <!-- aside -->
+    <aside>
+         <h3>Categories</h3>
+         <ul class="categories">
+            <li><span><a href="#">Map</a></span></li>
+            <li><span><a href="#">Bus time</a></span></li>           
+            <li><span><a href="#">Contact us</a></span></li>            
+         </ul>
+         <h2>Direction List</h2> 
+         <div id="panel"></div>
+		<input type="button" value="Directions" onclick="transitDirections('Union Square, Aberdeen', '2012-12-21','12:00')">	     
+   </aside>   
+      <!-- content -->
+      	<section id="content">
+         <div id="map_canvas"></div>
+         <div class="inner_copy">More <a href="http://www.aberdeen.ac.uk">aberdeen</a> </div>
+         <div class="inside">
+            <h2>Recent <span>Events</span></h2>
+			<div id="event">test</div>
+            <h2>Free to<span>find your way</span></h2>
+            <p><span class="txt1">Aberdeen Events</span>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+            <div class="img-box"><img src="images/1page-img.jpg">zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</div>
+            <p class="p0">pages: <a href="index.html">Home</a>, <a href="about-us.html">About us</a>, <a href="articles.html">Events</a> (with Events page), <a href="contact-us.html">Contact us</a>  <a href="sitemap.html">Site Map</a>.</p>
+         </div>
+      </section>
+   </div>
+</div>
+<script type="text/javascript"> Cufon.now(); </script>
+<script src="js/bootstrap.min.js"></script>
+</body>
+</html>
